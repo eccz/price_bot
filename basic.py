@@ -1,13 +1,16 @@
 import os
-
+import gspread
 from pandas import DataFrame
+import time
 
 from tinkoff.invest import Client, SecurityTradingStatus
 from tinkoff.invest.services import InstrumentsService
 from tinkoff.invest.utils import quotation_to_decimal
 
-
 TOKEN = os.getenv('INVEST_TOKEN')
+gc = gspread.service_account(filename='magnetic-runway-393913-0c95e82fc0be.json')
+
+sht1 = gc.open_by_key('1XLMvGH8B7BbOXbnYSOywQ-JfhmGQkRLyUR79_Nvgptg')
 
 
 def get_price_by_figi(figi='BBG004730ZJ9'):
@@ -19,8 +22,7 @@ def get_price_by_figi(figi='BBG004730ZJ9'):
         last_price = (
             client.market_data.get_last_prices(figi=[figi]).last_prices[0].price
         )
-        last_price = quotation_to_decimal(last_price)
-        print(f"{figi}, last price = {last_price}")
+        return quotation_to_decimal(last_price).to_eng_string()
 
 
 def instrument_find_query():
@@ -39,6 +41,7 @@ def figi_for_ticker():
     with Client(TOKEN) as client:
         instruments: InstrumentsService = client.instruments
         tickers = []
+        count = 0
         for method in ["shares", "bonds", "etfs", "currencies", "futures"]:
             for item in getattr(instruments, method)().instruments:
                 tickers.append(
@@ -49,39 +52,35 @@ def figi_for_ticker():
                         "figi": item.figi,
                         "uid": item.uid,
                         "type": method,
-                        "min_price_increment": quotation_to_decimal(
-                            item.min_price_increment
-                        ),
-                        "scale": 9 - len(str(item.min_price_increment.nano)) + 1,
-                        "lot": item.lot,
-                        "trading_status": str(
-                            SecurityTradingStatus(item.trading_status).name
-                        ),
-                        "api_trade_available_flag": item.api_trade_available_flag,
                         "currency": item.currency,
                         "exchange": item.exchange,
-                        "buy_available_flag": item.buy_available_flag,
-                        "sell_available_flag": item.sell_available_flag,
-                        "short_enabled_flag": item.short_enabled_flag,
-                        "klong": quotation_to_decimal(item.klong),
-                        "kshort": quotation_to_decimal(item.kshort),
+                        "last_price": get_price_by_figi(item.figi)
                     }
                 )
+                count += 1
+                print(count)
+                if count == 290:
+                    time.sleep(60)
+                    count = 0
 
         tickers_df = DataFrame(tickers)
+        # a = [i for i in tickers_df.values]
+        sht1.sheet1.clear()
+        sht1.sheet1.update([tickers_df.columns.values.tolist()] + tickers_df.values.tolist(), 'A1')
 
-        ticker_df = tickers_df[tickers_df["ticker"] == ticker]
-
-        figi = ticker_df["figi"].iloc[0]
-        uid = ticker_df["uid"].iloc[0]
-        print(f"\nTicker {ticker}, figi={figi}, uid={uid}")
-        print(f"Additional info for this {ticker} ticker:")
-        print(ticker_df.iloc[0])
+        # ticker_df = tickers_df[tickers_df["ticker"] == ticker]
+        #
+        # figi = ticker_df["figi"].iloc[0]
+        # uid = ticker_df["uid"].iloc[0]
+        # print(f"\nTicker {ticker}, figi={figi}, uid={uid}")
+        # print(f"Additional info for this {ticker} ticker:")
+        # print(ticker_df.iloc[0])
 
 
 if __name__ == '__main__':
     # get_price_by_figi(figi='BBG004730N88')
     figi_for_ticker()
+    print('THE END')
     # with Client(TOKEN) as client:
     #     statuses = client.market_data.get_trading_statuses(instrument_ids=["BBG004730N88"])
     #     print(statuses)
