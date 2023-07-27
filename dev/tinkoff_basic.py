@@ -3,14 +3,18 @@ import gspread
 from pandas import DataFrame
 import time
 
-from tinkoff.invest import Client, SecurityTradingStatus
+from tinkoff.invest import Client
 from tinkoff.invest.services import InstrumentsService
 from tinkoff.invest.utils import quotation_to_decimal
 
-TOKEN = os.getenv('INVEST_TOKEN')
-gc = gspread.service_account(filename='magnetic-runway-393913-0c95e82fc0be.json')
+from dev import GS_KEY_FILE_NAME
+from dev import GS_TI_BASE_SHEET
 
-sht1 = gc.open_by_key('1XLMvGH8B7BbOXbnYSOywQ-JfhmGQkRLyUR79_Nvgptg')
+TOKEN = os.getenv('INVEST_TOKEN')
+
+gc = gspread.service_account(filename=GS_KEY_FILE_NAME)
+
+sht1 = gc.open_by_key(GS_TI_BASE_SHEET)
 
 
 def get_price_by_figi(figi='BBG004730ZJ9'):
