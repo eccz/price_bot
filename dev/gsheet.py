@@ -6,7 +6,8 @@ from dev import GS_KEY_FILE_NAME
 gc = gspread.service_account(filename=GS_KEY_FILE_NAME)
 
 sht1 = gc.open_by_key(GS_TEST_SHEET)
-sht1.sheet1.clear()
+worksheet1 = sht1.get_worksheet(0)
+worksheet2 = sht1.get_worksheet(1)
+worksheet2.clear()
 
-for i in range(20):
-    sht1.sheet1.update([['asd', 'qwe']] + [['123', '345'], ['321', '654']])
+worksheet1.update([['1', '2'], ['3', '4']])
