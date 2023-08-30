@@ -1,3 +1,5 @@
+import json
+
 import gspread
 from dev import GS_GOOGLE_ALERT_SHEET
 from dev import GS_KEY_FILE_NAME
@@ -16,9 +18,9 @@ def ggl_base_read(filename=GS_KEY_FILE_NAME, sht=GS_GOOGLE_ALERT_SHEET):
     # worksheet_size = len(worksheet.col_values(2)) - 1
     # for i in range(worksheet_size):
     #     ticker = namedtuple('ticker', ['name', 'condition', 'value'])
-    #     ticker.name = worksheet.acell(f'B{i+2}').value
-    #     ticker.condition = worksheet.acell(f'C{i+2}').value
-    #     ticker.value = worksheet.acell(f'D{i+2}').value
+    #     ticker.name = worksheet.acell(f'A{i+2}').value
+    #     ticker.condition = worksheet.acell(f'B{i+2}').value
+    #     ticker.value = worksheet.acell(f'C{i+2}').value
     #     result.append(ticker)
 
     '''Через pandas быстрее, но городить pandas на ровном месте не хочется'''
@@ -32,12 +34,13 @@ def ggl_base_read(filename=GS_KEY_FILE_NAME, sht=GS_GOOGLE_ALERT_SHEET):
     #
     #     result.append(ticker)
 
-    for i in worksheet.get_all_records():
-        ticker = namedtuple('ticker', ['name', 'condition', 'value', 'status'])
-        ticker.name = i['Тикер binance']
-        ticker.condition = i['Условие']
-        ticker.value = i['Стоимость']
-        ticker.status = i['Обрабатывается']
+    for i in worksheet.get_all_records(numericise_ignore=[3]):
+        # ticker = namedtuple('ticker', ['name', 'condition', 'value', 'status'])
+        ticker = dict()
+        ticker['name'] = i['Тикер binance'].lower()
+        ticker['condition'] = i['Условие']
+        ticker['value'] = float((i['Стоимость'].replace(',', '.')))
+        ticker['status'] = i['Обрабатывается']
 
         result.append(ticker)
 
@@ -46,4 +49,5 @@ def ggl_base_read(filename=GS_KEY_FILE_NAME, sht=GS_GOOGLE_ALERT_SHEET):
 
 if __name__ == '__main__':
     a = ggl_base_read()
-    # print([(i.name, i.value) for i in a])
+    # [print(i.name, i.value) for i in a]
+    print(a)

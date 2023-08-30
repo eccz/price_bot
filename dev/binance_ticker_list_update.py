@@ -7,7 +7,7 @@ from dev import GS_KEY_FILE_NAME
 
 def ticker_list():
     spot_client = Client()
-    return [[i['symbol']] for i in spot_client.ticker_price()]
+    return [[i['symbol'], i['price']] for i in spot_client.ticker_price()]
 
 
 def list_update():
