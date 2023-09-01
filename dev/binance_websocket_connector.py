@@ -1,7 +1,41 @@
 import websocket
 import json
+import time
+from controller import ggl_base_read
+from controller import ggl_status_changer
+from controller import alert
 
 result = []
+user_data = ['']
+binance_data = ['']
+done_alerts = []
+
+
+def comparator(userdata, binancedata):
+    while True:
+        if userdata == [''] or binancedata == ['']:
+            time.sleep(3)
+            continue
+        for i in userdata[0]:
+            print(userdata[0])
+            if i in done_alerts: continue
+            user_symbol = i.get('symbol')
+            sign = i.get('sign')
+            user_price = i.get('price')
+            status = i.get('status')
+            for n in binancedata[0]:
+                if n.get('symbol') == user_symbol and status == 'да':
+                    alert(user_symbol, sign, n.get('price'), user_price)
+                    ggl_status_changer(user_symbol)
+                    done_alerts.append(i)
+                    time.sleep(2)
+        time.sleep(1)
+
+
+def ggl_base_reader():
+    while True:
+        time.sleep(5)
+        user_data[0] = ggl_base_read()
 
 
 def on_open(_wsa):
@@ -15,11 +49,11 @@ def on_open(_wsa):
 
 
 def on_message(_wsa, data):
-    # _ = json.loads(data)
-    # for i in _:
-    #     result.append(i['s']) if i['s'] not in result else None
-    # print(len(result))
-    print(json.loads(data))
+    tmp = json.loads(data)
+    if tmp[0].get('e') is not None:
+        res = [dict(symbol=e.get('s'), price=float(e.get('c')), time=time.ctime(e.get('E') / 1000)) for e in tmp]
+        print(res[0])
+        binance_data[0] = res
 
 
 def run():

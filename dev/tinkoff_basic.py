@@ -8,25 +8,31 @@ from tinkoff.invest.services import InstrumentsService
 from tinkoff.invest.utils import quotation_to_decimal
 
 from dev import GS_KEY_FILE_NAME
-from dev import GS_TI_BASE_SHEET
+from dev import GS_GOOGLE_ALERT_SHEET
 
 TOKEN = os.getenv('INVEST_TOKEN')
 
 gc = gspread.service_account(filename=GS_KEY_FILE_NAME)
 
-sht1 = gc.open_by_key(GS_TI_BASE_SHEET)
+sht1 = gc.open_by_key(GS_GOOGLE_ALERT_SHEET)
 
 
-def get_price_by_figi(figi='BBG004730ZJ9'):
-    """Example - How to create takeprofit buy order."""
+def get_price_by_figi(figi_list):
+    result = []
+
     with Client(TOKEN) as client:
-        # BBG004730ZJ9 - VTBR / BBG004730N88 - SBER
-
-        # getting the last price for instrument
-        last_price = (
-            client.market_data.get_last_prices(figi=[figi]).last_prices[0].price
+        last_prices = (
+            client.market_data.get_last_prices(figi=figi_list).last_prices
         )
-        return quotation_to_decimal(last_price).to_eng_string()
+
+        for item in last_prices:
+            result.append(dict(
+                figi=item.figi,
+                price=float(quotation_to_decimal(item.price).to_eng_string()),
+                time=item.time.ctime()
+            ))
+
+    return result
 
 
 def instrument_find_query():
@@ -69,8 +75,10 @@ def figi_for_ticker():
 
         tickers_df = DataFrame(tickers)
         # a = [i for i in tickers_df.values]
-        sht1.sheet1.clear()
-        sht1.sheet1.update([tickers_df.columns.values.tolist()] + tickers_df.values.tolist(), 'A1')
+        # sht1.sheet1.clear()
+        worksheet = sht1.get_worksheet(3)
+        worksheet.clear()
+        worksheet.update([tickers_df.columns.values.tolist()] + tickers_df.values.tolist(), 'A1')
 
         # ticker_df = tickers_df[tickers_df["ticker"] == ticker]
         #
@@ -82,9 +90,10 @@ def figi_for_ticker():
 
 
 if __name__ == '__main__':
-    # get_price_by_figi(figi='BBG004730N88')
-    figi_for_ticker()
-    print('THE END')
+    a = get_price_by_figi(figi_list=['BBG004730N88', 'BBG004730ZJ9', 'BBG00F6NKQX3'])
+    print(a)
+    # figi_for_ticker()
+    # print('THE END')
     # with Client(TOKEN) as client:
     #     statuses = client.market_data.get_trading_statuses(instrument_ids=["BBG004730N88"])
     #     print(statuses)

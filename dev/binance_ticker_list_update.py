@@ -14,9 +14,9 @@ def list_update():
     gc = gspread.service_account(filename=GS_KEY_FILE_NAME)
     sht1 = gc.open_by_key(GS_GOOGLE_ALERT_SHEET)
 
-    worksheet2 = sht1.get_worksheet(1)
-    worksheet2.clear()
-    worksheet2.update(ticker_list())
+    binance_ticker_list = sht1.get_worksheet(2)
+    binance_ticker_list.clear()
+    binance_ticker_list.update(ticker_list())
 
 
 if __name__ == '__main__':
