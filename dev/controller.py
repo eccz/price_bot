@@ -19,7 +19,13 @@ def ggl_status_changer(symbol, filename=GS_KEY_FILE_NAME, sht=GS_GOOGLE_ALERT_SH
     sht1 = gc.open_by_key(sht)
     worksheet = sht1.get_worksheet(0)
     cell = worksheet.find(symbol.upper())
-    worksheet.update_cell(cell.row, cell.col + 3, 'нет')
+    if cell:
+        worksheet.update_cell(cell.row, cell.col + 3, 'нет')
+    else:
+        worksheet = sht1.get_worksheet(1)
+        cell = worksheet.find(symbol.upper())
+        if cell:
+            worksheet.update_cell(cell.row, cell.col + 3, 'нет')
 
 
 def ggl_base_read(filename=GS_KEY_FILE_NAME, sht=GS_GOOGLE_ALERT_SHEET):
@@ -60,7 +66,7 @@ def ggl_base_read(filename=GS_KEY_FILE_NAME, sht=GS_GOOGLE_ALERT_SHEET):
 
 
 if __name__ == '__main__':
-    a = ggl_base_read()
+    # a = ggl_base_read()
     # [print(i.name, i.value) for i in a]
-    print(a)
-    # ggl_status_changer('asd')
+    # print(a)
+    ggl_status_changer('SBER')
