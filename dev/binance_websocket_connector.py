@@ -5,25 +5,26 @@ from controller import ggl_base_read
 from controller import ggl_status_changer
 from controller import alert
 
+
 result = []
-user_data = ['']
-binance_data = ['']
+user_data = [{}]
+binance_data = [{}]
 done_alerts = []
 
 
-def comparator(userdata, binancedata):
+def comparator():
     while True:
-        if userdata == [''] or binancedata == ['']:
+        if user_data == [{}] or binance_data == [{}]:
             time.sleep(3)
             continue
-        for i in userdata[0]:
-            print(userdata[0])
+        for i in user_data[0]:
+            # print(user_data[0])
             if i in done_alerts: continue
             user_symbol = i.get('symbol')
             sign = i.get('sign')
             user_price = i.get('price')
             status = i.get('status')
-            for n in binancedata[0]:
+            for n in binance_data[0]:
                 if n.get('symbol') == user_symbol and status == 'да':
                     alert(user_symbol, sign, n.get('price'), user_price)
                     ggl_status_changer(user_symbol)
@@ -52,7 +53,6 @@ def on_message(_wsa, data):
     tmp = json.loads(data)
     if tmp[0].get('e') is not None:
         res = [dict(symbol=e.get('s'), price=float(e.get('c')), time=time.ctime(e.get('E') / 1000)) for e in tmp]
-        print(res[0])
         binance_data[0] = res
 
 

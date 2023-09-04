@@ -9,6 +9,6 @@ from binance_websocket_connector import comparator
 if __name__ == '__main__':
     ws_thread = threading.Thread(target=run).start()
     ggs_thread = threading.Thread(target=ggl_base_reader).start()
-    comp_thread = threading.Thread(target=comparator, args=(user_data, binance_data)).start()
+    comp_thread = threading.Thread(target=comparator).start()
 
     # test_thread = threading.Thread(target=thr_test).start()

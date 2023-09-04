@@ -1,5 +1,6 @@
 from dev import TG_BOT_TOKEN, TG_CHAT_IDS
 import requests
+from logger import logger
 import time
 
 
@@ -7,6 +8,7 @@ def send_msg(msg):
     for _id in TG_CHAT_IDS:
         url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage?chat_id={_id}&text={msg}"
         requests.get(url)
+        logger.info(f'Сообщение на ID {_id} отправлено')
         # time.sleep(1)
         break
 

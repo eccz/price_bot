@@ -1,6 +1,4 @@
-import json
-import time
-
+from logger import logger
 import gspread
 from dev import GS_GOOGLE_ALERT_SHEET
 from dev import GS_KEY_FILE_NAME
@@ -21,11 +19,13 @@ def ggl_status_changer(symbol, filename=GS_KEY_FILE_NAME, sht=GS_GOOGLE_ALERT_SH
     cell = worksheet.find(symbol.upper())
     if cell:
         worksheet.update_cell(cell.row, cell.col + 3, 'нет')
+        logger.info(f'Статус {symbol} изменен в таблице с криптой')
     else:
         worksheet = sht1.get_worksheet(1)
         cell = worksheet.find(symbol.upper())
         if cell:
             worksheet.update_cell(cell.row, cell.col + 3, 'нет')
+            logger.info(f'Статус {symbol} изменен в таблице с фондой')
 
 
 def ggl_base_read(filename=GS_KEY_FILE_NAME, sht=GS_GOOGLE_ALERT_SHEET):
@@ -48,6 +48,7 @@ def ggl_base_read(filename=GS_KEY_FILE_NAME, sht=GS_GOOGLE_ALERT_SHEET):
             else:
                 continue
             result.append(ticker)
+    logger.info('Выполнен запрос к листу с криптой')
 
     for e in worksheet_funds.get_all_records(numericise_ignore=[3]):
         if all(e.values()):
@@ -62,11 +63,13 @@ def ggl_base_read(filename=GS_KEY_FILE_NAME, sht=GS_GOOGLE_ALERT_SHEET):
                 continue
             result.append(ticker)
 
+    logger.info('Выполнен запрос к листу с фондой')
+
     return result
 
 
 if __name__ == '__main__':
-    # a = ggl_base_read()
+    a = ggl_base_read()
     # [print(i.name, i.value) for i in a]
     # print(a)
-    ggl_status_changer('SBER')
+    # ggl_status_changer('SBER')
