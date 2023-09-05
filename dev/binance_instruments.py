@@ -5,9 +5,11 @@ from ggl_instruments import ggl_base_read
 from ggl_instruments import ggl_status_changer
 from tg_sender import send_msg
 from logger import logger
+from ti_instruments import ti_handler
 
 user_data = [{}]
 binance_data = [{}]
+ti_data = [{}]
 
 
 def compare(sign: str, exchange_price: float, user_price: float) -> bool:
@@ -26,7 +28,7 @@ def user_data_status_changer(dataset: list, symbol: str) -> None:
 
 def comparator():
     while True:
-        if user_data == [{}] or binance_data == [{}]:
+        if user_data == [{}] or binance_data == [{}] or ti_data == [{}]:
             time.sleep(3)
             continue
         for i in user_data[0]:
@@ -42,7 +44,21 @@ def comparator():
                         ggl_status_changer(user_symbol, asset_type)
                         user_data_status_changer(user_data, user_symbol)
                     time.sleep(2)
+            for m in ti_data[0]:
+                if m.get('symbol') == user_symbol and status == 'да':
+                    if compare(sign, m.get('price'), user_price):
+                        send_msg(f'Цена на {user_symbol} {sign} {user_price}, текущая цена = {m.get("price")}', user_symbol)
+                        ggl_status_changer(user_symbol, asset_type)
+                        user_data_status_changer(user_data, user_symbol)
+                    time.sleep(2)
         time.sleep(1)
+
+
+def ti_thread():
+    while True:
+        time.sleep(3)
+        ti_data[0] = ti_handler(user_data[0])
+        time.sleep(15)
 
 
 def ggl_base_reader():
