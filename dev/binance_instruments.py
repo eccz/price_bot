@@ -1,15 +1,27 @@
 import websocket
 import json
 import time
-from controller import ggl_base_read
-from controller import ggl_status_changer
-from controller import alert
+from ggl_instruments import ggl_base_read
+from ggl_instruments import ggl_status_changer
+from tg_sender import send_msg
+from logger import logger
 
-
-result = []
 user_data = [{}]
 binance_data = [{}]
-done_alerts = []
+
+
+def compare(sign: str, exchange_price: float, user_price: float) -> bool:
+    if sign == '>' and exchange_price > user_price:
+        return True
+    if sign == '<' and exchange_price < user_price:
+        return True
+
+
+def user_data_status_changer(dataset: list, symbol: str) -> None:
+    for i in dataset[0]:
+        if i.get('symbol') == symbol:
+            i['status'] = 'нет'
+            logger.info(f'Статус {symbol} в user_data изменен на нет')
 
 
 def comparator():
@@ -18,25 +30,25 @@ def comparator():
             time.sleep(3)
             continue
         for i in user_data[0]:
-            # print(user_data[0])
-            if i in done_alerts: continue
             user_symbol = i.get('symbol')
+            asset_type = i.get('type')
             sign = i.get('sign')
             user_price = i.get('price')
             status = i.get('status')
             for n in binance_data[0]:
                 if n.get('symbol') == user_symbol and status == 'да':
-                    alert(user_symbol, sign, n.get('price'), user_price)
-                    ggl_status_changer(user_symbol)
-                    done_alerts.append(i)
+                    if compare(sign, n.get('price'), user_price):
+                        send_msg(f'Цена на {user_symbol} {sign} {user_price}, текущая цена = {n.get("price")}', user_symbol)
+                        ggl_status_changer(user_symbol, asset_type)
+                        user_data_status_changer(user_data, user_symbol)
                     time.sleep(2)
         time.sleep(1)
 
 
 def ggl_base_reader():
     while True:
-        time.sleep(5)
         user_data[0] = ggl_base_read()
+        time.sleep(15)
 
 
 def on_open(_wsa):

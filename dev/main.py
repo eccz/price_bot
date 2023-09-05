@@ -1,10 +1,10 @@
 import time
 import threading
-from binance_websocket_connector import run
-from binance_websocket_connector import ggl_base_reader
-from binance_websocket_connector import user_data
-from binance_websocket_connector import binance_data
-from binance_websocket_connector import comparator
+from binance_instruments import run
+from binance_instruments import ggl_base_reader
+from binance_instruments import user_data
+from binance_instruments import binance_data
+from binance_instruments import comparator
 
 if __name__ == '__main__':
     ws_thread = threading.Thread(target=run).start()
