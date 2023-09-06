@@ -1,4 +1,6 @@
 import os
+import time
+
 from tinkoff.invest import Client
 from tinkoff.invest.services import InstrumentsService
 from tinkoff.invest.utils import quotation_to_decimal
@@ -12,12 +14,18 @@ tmp = [{'symbol': 'VTBR', 'type': 'funds', 'sign': '>', 'price': 0.01, 'status':
 
 
 def dataset_validation(dataset: list) -> bool:
-    if dataset[0].get('symbol'):
-        return True
+    try:
+        if dataset[0].get('symbol') and any([i.get('type') == 'funds' for i in dataset]):
+            logger.info('Проверка датасета ti_instrument прошла')
+            return True
+        else:
+            logger.info('Проверка датасета ti_instrument не прошла')
+    except IndexError as err:
+        logger.error('user_data пустая')
 
 
 def data_to_ticker_list(dataset):
-    return [i.get('symbol') for i in dataset]
+    return [i.get('symbol') for i in dataset if i.get('type') == 'funds']
 
 
 def figis_by_ticker(ticker_list):
@@ -33,7 +41,6 @@ def figis_by_ticker(ticker_list):
                 }
             ) if item.ticker in ticker_list else None
     logger.info(f'Получено {len(tickers)} figi по списку тикеров')
-    print(tickers)
     return tickers
 
 
@@ -66,4 +73,4 @@ def ti_handler(dataset) -> list:
 if __name__ == '__main__':
     # get_price_by_figi(['BBG004730N88'])
     # get_price_by_figi(['BBG004730ZJ9', 'BBG00F6NKQX3', 'BBG004730N88'])
-    print(ti_handler(tmp))
+    print(figis_by_ticker(['AAPL', 'SBER']))

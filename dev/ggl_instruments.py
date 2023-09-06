@@ -38,16 +38,27 @@ def worksheet_get_all_records(worksheet: gspread.Worksheet, asset_type: str) -> 
     return res
 
 
-def ggl_status_changer(symbol: str, asset_type: str, sht1=google_sheet) -> None:
+def ggl_find_to_update(symbol: str, worksheet: gspread.Worksheet, sign: str, user_price: float) -> list:
+    res = []
+    cells = worksheet.findall(symbol.upper())
+    for cell in cells:
+        row_num = cell.row
+        row = worksheet.row_values(row_num)
+        if row[0] == symbol and row[1] == sign and comma_string_to_float(row[2]) == user_price:
+            res.append(cell)
+    return res
+
+
+def ggl_status_changer(symbol: str, asset_type: str, sign: str, user_price: float, sht1=google_sheet) -> None:
     if asset_type == 'crypto':
         worksheet = sht1.get_worksheet(0)
-        cell = worksheet.find(symbol.upper())
-        worksheet_status_updater(worksheet, cell, symbol)
+        cells = ggl_find_to_update(symbol, worksheet, sign, user_price)
+        [worksheet_status_updater(worksheet, cell, symbol) for cell in cells]
         return
     if asset_type == 'funds':
         worksheet = sht1.get_worksheet(1)
-        cell = worksheet.find(symbol.upper())
-        worksheet_status_updater(worksheet, cell, symbol)
+        cells = ggl_find_to_update(symbol, worksheet, sign, user_price)
+        [worksheet_status_updater(worksheet, cell, symbol) for cell in cells]
 
 
 def ggl_base_read(sht1=google_sheet) -> list:
@@ -58,7 +69,8 @@ def ggl_base_read(sht1=google_sheet) -> list:
 
 
 if __name__ == '__main__':
-    a = ggl_base_read()
+    # a = ggl_base_read()
     # [print(i.name, i.value) for i in a]
-    print(a)
-    # ggl_status_changer('SBER', asset_type='funds')
+    # print(a)
+    # ggl_status_changer('BTCUSDT', 'crypto', '<', 25760.63)
+    ggl_base_read()
