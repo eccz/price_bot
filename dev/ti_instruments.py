@@ -1,10 +1,15 @@
 import os
-import time
 
 from tinkoff.invest import Client
 from tinkoff.invest.services import InstrumentsService
 from tinkoff.invest.utils import quotation_to_decimal
 from logger import logger
+from ggl_instruments import user_data
+import time
+from collections import deque
+
+ti_data = deque(maxlen=1)
+
 
 TOKEN = os.getenv('INVEST_TOKEN')
 
@@ -68,6 +73,14 @@ def ti_handler(dataset) -> list:
         ticker_list = data_to_ticker_list(dataset)
         figi_ticker_list = figis_by_ticker(ticker_list)
         return get_price_by_figi(figi_ticker_list)
+
+
+def ti_worker():
+    while True:
+        time.sleep(4)
+        data = ti_handler(user_data[0])
+        ti_data.append(data)
+        time.sleep(14)
 
 
 if __name__ == '__main__':

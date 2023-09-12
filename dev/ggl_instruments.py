@@ -1,8 +1,11 @@
 from logger import logger
 import gspread
-from dev import GS_GOOGLE_ALERT_SHEET
-from dev import GS_KEY_FILE_NAME
+from creds import GS_GOOGLE_ALERT_SHEET
+from creds import GS_KEY_FILE_NAME
+import time
+from collections import deque
 
+user_data = deque(maxlen=1)
 
 google_auth = gspread.service_account(filename=GS_KEY_FILE_NAME)
 google_sheet = google_auth.open_by_key(GS_GOOGLE_ALERT_SHEET)
@@ -19,7 +22,11 @@ def worksheet_row_validation(row: dict) -> bool:
 
 
 def comma_string_to_float(value: str) -> float:
-    return float(value.replace(',', '.'))
+    try:
+        res = float(value.replace(',', '.'))
+        return res
+    except ValueError:
+        logger.error('Некорректное значение цены в гугл таблице')
 
 
 def worksheet_get_all_records(worksheet: gspread.Worksheet, asset_type: str) -> list:
@@ -66,6 +73,19 @@ def ggl_base_read(sht1=google_sheet) -> list:
     worksheet_funds = sht1.get_worksheet(1)
     return (worksheet_get_all_records(worksheet_crypto, asset_type='crypto') +
             worksheet_get_all_records(worksheet_funds, asset_type='funds'))
+
+
+def user_data_status_changer(symbol: str, sign: str, user_price: float) -> None:
+    for i in user_data[0]:
+        if i.get('symbol') == symbol and i.get('sign') == sign and i.get('price') == user_price:
+            i['status'] = 'нет'
+            logger.info(f'Статус {symbol} в user_data изменен на нет')
+
+
+def ggl_base_reader():
+    while True:
+        user_data.append(ggl_base_read())
+        time.sleep(20)
 
 
 if __name__ == '__main__':

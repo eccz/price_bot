@@ -1,4 +1,5 @@
-from dev import TG_BOT_TOKEN, TG_CHAT_IDS
+from creds import TG_BOT_TOKEN
+from creds import TG_CHAT_IDS  # list of id's ['123123', '345345345', '567567']
 import requests
 from logger import logger
 import time
@@ -11,6 +12,12 @@ def send_msg(msg, symbol):
         logger.info(f'Сообщение по тикеру {symbol} на ID {_id} отправлено')
         # time.sleep(1)
         break
+
+
+def send_debug_msg(msg):
+    url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage?chat_id=374543333&text={msg}"
+    requests.get(url)
+    logger.info(f'Debug message sent')
 
 
 def bot_update():

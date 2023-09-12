@@ -1,8 +1,8 @@
 from binance.spot import Spot as Client
 
 import gspread
-from dev import GS_GOOGLE_ALERT_SHEET
-from dev import GS_KEY_FILE_NAME
+from creds import GS_GOOGLE_ALERT_SHEET
+from creds import GS_KEY_FILE_NAME
 from ggl_instruments import comma_string_to_float
 
 
