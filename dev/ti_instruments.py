@@ -7,11 +7,13 @@ from logger import logger
 from ggl_instruments import user_data
 import time
 from collections import deque
+from creds import TI_TOKEN
 
 ti_data = deque(maxlen=1)
 
 
-TOKEN = os.getenv('INVEST_TOKEN')
+# TOKEN = os.getenv('INVEST_TOKEN')
+
 
 tmp = [{'symbol': 'VTBR', 'type': 'funds', 'sign': '>', 'price': 0.01, 'status': 'да'},
        {'symbol': 'RUAL', 'type': 'funds', 'sign': '<', 'price': 35.0, 'status': 'да'},
@@ -35,7 +37,7 @@ def data_to_ticker_list(dataset):
 
 def figis_by_ticker(ticker_list):
 
-    with Client(TOKEN) as client:
+    with Client(TI_TOKEN) as client:
         instruments: InstrumentsService = client.instruments
         tickers = []
         for item in instruments.shares().instruments:
@@ -52,7 +54,7 @@ def figis_by_ticker(ticker_list):
 def get_price_by_figi(figi_ticker_list):
     result = []
     figi_list = [i.get('figi') for i in figi_ticker_list]
-    with Client(TOKEN) as client:
+    with Client(TI_TOKEN) as client:
         last_prices = (
             client.market_data.get_last_prices(figi=figi_list).last_prices
         )
