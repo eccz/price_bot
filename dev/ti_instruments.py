@@ -85,7 +85,7 @@ def ti_worker():
             ti_data.append(data)
             time.sleep(14)
         except Exception as ex:
-            logger.fatal('Тинькофф ебнулся, должен произойти перезапуск')
+            logger.fatal('Тинькофф упал с ошибкой, должен произойти перезапуск')
             logger.info(ex)
             os.kill(os.getpid(), 9)
 
