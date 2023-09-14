@@ -79,10 +79,15 @@ def ti_handler(dataset) -> list:
 
 def ti_worker():
     while True:
-        time.sleep(4)
-        data = ti_handler(user_data[0])
-        ti_data.append(data)
-        time.sleep(14)
+        try:
+            time.sleep(4)
+            data = ti_handler(user_data[0])
+            ti_data.append(data)
+            time.sleep(14)
+        except Exception as ex:
+            logger.fatal('Тинькофф ебнулся, должен произойти перезапуск')
+            logger.info(ex)
+            os.kill(os.getpid(), 9)
 
 
 if __name__ == '__main__':

@@ -10,8 +10,8 @@ def send_msg(msg, symbol):
         url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage?chat_id={_id}&text={msg}"
         requests.get(url)
         logger.info(f'Сообщение по тикеру {symbol} на ID {_id} отправлено')
-        # time.sleep(1)
-        break
+        time.sleep(1)
+        # break
 
 
 def send_debug_msg(msg):
